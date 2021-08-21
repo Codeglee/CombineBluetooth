@@ -11,6 +11,6 @@ struct CoreBluetoothDescriptor: Identifiable {
 }
 
 extension CoreBluetoothDescriptor: BluetoothDescriptor {
-    var characteristic: BluetoothCharacteristic { CoreBluetoothCharacteristic(characteristic: descriptor.characteristic) }
+    var characteristic: BluetoothCharacteristic? { descriptor.characteristic != nil ? CoreBluetoothCharacteristic(characteristic: descriptor.characteristic!) : nil }
     var value: Any? { descriptor.value }
 }

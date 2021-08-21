@@ -11,7 +11,7 @@ struct CoreBluetoothCharacteristic: Identifiable {
 }
 
 extension CoreBluetoothCharacteristic: BluetoothCharacteristic {
-    var service: BluetoothService { CoreBluetoothService(service: characteristic.service) }
+    var service: BluetoothService? { characteristic.service != nil ? CoreBluetoothService(service: characteristic.service!) : nil }
     var properties: CBCharacteristicProperties { characteristic.properties }
     var value: Data? { characteristic.value }
     var descriptors: [BluetoothDescriptor]? { characteristic.descriptors?.map(CoreBluetoothDescriptor.init) }
