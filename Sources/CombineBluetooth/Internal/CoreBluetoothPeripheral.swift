@@ -17,7 +17,7 @@ public class CoreBluetoothPeripheral: NSObject, Identifiable {
     private let didWriteValueForDescriptor = PassthroughSubject<Result<CBDescriptor, Error>, Never>()
     private let becameReadyForWriteWithoutResponse = PassthroughSubject<Void, Never>()
 
-    static func wrapping(peripheral: CBPeripheral) -> CoreBluetoothPeripheral {
+    public static func from(peripheral: CBPeripheral) -> CoreBluetoothPeripheral {
         CoreBluetoothPeripheral(peripheral: peripheral)
     }
 

@@ -46,7 +46,7 @@ extension CoreBluetoothCentralManager: CentralManager {
         cachedPeripheralsAccess.lock()
         defer { cachedPeripheralsAccess.unlock() }
         if let instance = cachedPeripherals[cbPeripheral.identifier] { return instance }
-        let newInstance = CoreBluetoothPeripheral.wrapping(peripheral: cbPeripheral)
+        let newInstance = CoreBluetoothPeripheral.from(peripheral: cbPeripheral)
         cachedPeripherals[cbPeripheral.identifier] = newInstance
         return newInstance
     }
