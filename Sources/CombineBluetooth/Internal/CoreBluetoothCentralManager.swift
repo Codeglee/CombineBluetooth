@@ -1,7 +1,7 @@
 import Combine
 import CoreBluetooth
 
-class CoreBluetoothCentralManager: NSObject {
+public class CoreBluetoothCentralManager: NSObject {
     private var kvoDelegate: AnyCancellable?
     private let centralManager: CBCentralManager
     // This is required to avoid returning different instances of CoreBluetoothPeripheral every time we discover a device previously discovered.
@@ -51,25 +51,26 @@ extension CoreBluetoothCentralManager: CentralManager {
         return newInstance
     }
 
-    var isScanning: AnyPublisher<Bool, Never> {
+    public var isScanning: AnyPublisher<Bool, Never> {
         centralManager
             .publisher(for: \.isScanning)
             .prepend(centralManager.isScanning)
             .removeDuplicates()
             .eraseToAnyPublisher()
     }
-    var state: AnyPublisher<CBManagerState, BluetoothError> { _state.eraseToAnyPublisher() }
-    var stateRestoration: AnyPublisher<StateRestorationEvent, BluetoothError> { _stateRestoration.eraseToAnyPublisher() }
-    func scanForPeripherals() -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
+    public var state: AnyPublisher<CBManagerState, BluetoothError> { _state.eraseToAnyPublisher() }
+    public var stateRestoration: AnyPublisher<StateRestorationEvent, BluetoothError> { _stateRestoration.eraseToAnyPublisher() }
+
+    public func scanForPeripherals() -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
         _scanForPeripherals(withServices: nil, options: nil)
     }
-    func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?) -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
+    public func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?) -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
         _scanForPeripherals(withServices: serviceUUIDs, options: nil)
     }
-    func scanForPeripherals(options: [String : Any]) -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
+    public func scanForPeripherals(options: [String : Any]) -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
         _scanForPeripherals(withServices: nil, options: options)
     }
-    func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?, options: [String : Any]) -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
+    public func scanForPeripherals(withServices serviceUUIDs: [CBUUID]?, options: [String : Any]) -> AnyPublisher<AdvertisingPeripheral, BluetoothError> {
         _scanForPeripherals(withServices: serviceUUIDs, options: options)
     }
 
@@ -87,7 +88,7 @@ extension CoreBluetoothCentralManager: CentralManager {
             .eraseToAnyPublisher()
     }
 
-    var peripheralConnection: AnyPublisher<PeripheralConnectionEvent, Never> {
+    public var peripheralConnection: AnyPublisher<PeripheralConnectionEvent, Never> {
         Publishers.Merge3(
             _didConnectPeripheral
                 .map(peripheral(for:))
@@ -100,11 +101,11 @@ extension CoreBluetoothCentralManager: CentralManager {
         .eraseToAnyPublisher()
     }
 
-    func connect(_ peripheral: BluetoothPeripheral) -> AnyPublisher<BluetoothPeripheral, BluetoothError> {
+    public func connect(_ peripheral: BluetoothPeripheral) -> AnyPublisher<BluetoothPeripheral, BluetoothError> {
         _connect(peripheral, options: nil)
     }
 
-    func connect(_ peripheral: BluetoothPeripheral, options: [String : Any]) -> AnyPublisher<BluetoothPeripheral, BluetoothError> {
+    public func connect(_ peripheral: BluetoothPeripheral, options: [String : Any]) -> AnyPublisher<BluetoothPeripheral, BluetoothError> {
         _connect(peripheral, options: options)
     }
 
@@ -140,25 +141,25 @@ extension CoreBluetoothCentralManager: CentralManager {
         .eraseToAnyPublisher()
     }
 
-    func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [BluetoothPeripheral] {
+    public func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [BluetoothPeripheral] {
         centralManager.retrievePeripherals(withIdentifiers: identifiers).map(peripheral(for:))
     }
 
-    func retrieveConnectedPeripherals(withServices serviceUUIDs: [CBUUID]) -> [BluetoothPeripheral] {
+    public func retrieveConnectedPeripherals(withServices serviceUUIDs: [CBUUID]) -> [BluetoothPeripheral] {
         centralManager.retrieveConnectedPeripherals(withServices: serviceUUIDs).map(peripheral(for:))
     }
 }
 
 extension CoreBluetoothCentralManager: CBCentralManagerDelegate {
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         _state.send(central.state)
     }
 
-    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+    public func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
         _stateRestoration.send(.willRestoreState(dict))
     }
 
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         _scanPublisher.send(
             CoreBluetoothAdvertisingPeripheral(
                 advertisementData: advertisementData,
@@ -168,15 +169,15 @@ extension CoreBluetoothCentralManager: CBCentralManagerDelegate {
         )
     }
 
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         _didConnectPeripheral.send(peripheral)
     }
 
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         _didFailToConnectPeripheral.send((peripheral: peripheral, error: error))
     }
 
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         _didDisconnectPeripheral.send((peripheral: peripheral, error: error))
     }
 }
