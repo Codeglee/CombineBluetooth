@@ -1,7 +1,7 @@
 import CoreBluetooth
 import Combine
 
-struct CoreBluetoothService: Identifiable {
+public struct CoreBluetoothService: Identifiable {
     var id: CBUUID { service.id }
     let service: CBService
 
