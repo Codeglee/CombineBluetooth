@@ -1,9 +1,9 @@
 import Combine
 import CoreBluetooth
 
-class CoreBluetoothPeripheral: NSObject, Identifiable {
-    var id: UUID { peripheral.id }
-    let peripheral: CBPeripheral
+public class CoreBluetoothPeripheral: NSObject, Identifiable {
+    public var id: UUID { peripheral.id }
+    public let peripheral: CBPeripheral
     private let didReadRSSI = PassthroughSubject<Result<NSNumber, Error>, Never>()
     private let didDiscoverServices = PassthroughSubject<Result<[CBService], Error>, Never>()
     private let didDiscoverIncludedServices = PassthroughSubject<Result<(parent: CBService, included: [CBService]), Error>, Never>()
@@ -29,42 +29,42 @@ class CoreBluetoothPeripheral: NSObject, Identifiable {
 }
 
 extension CoreBluetoothPeripheral: CBPeripheralDelegate {
-    func peripheralDidUpdateName(_ peripheral: CBPeripheral) { }
-    func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) { }
-    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+    public func peripheralDidUpdateName(_ peripheral: CBPeripheral) { }
+    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) { }
+    public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         didReadRSSI.send(error.map(Result.failure) ?? .success(RSSI))
     }
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         didDiscoverServices.send(error.map(Result.failure) ?? .success(peripheral.services ?? []))
     }
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: Error?) {
         didDiscoverIncludedServices.send(error.map(Result.failure) ?? .success((parent: service, included: service.includedServices ?? [])))
     }
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         didDiscoverCharacteristics.send(error.map(Result.failure) ?? .success((service: service, characteristics: service.characteristics ?? [])))
     }
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         readValueForCharacteristic.send(error.map(Result.failure) ?? .success(characteristic))
     }
-    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         didWriteValueForCharacteristic.send(error.map(Result.failure) ?? .success(characteristic))
     }
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         didUpdateNotificationStateForCharacteristic.send(error.map(Result.failure) ?? .success(characteristic))
     }
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
         readValueForDescriptor.send(error.map(Result.failure) ?? .success(descriptor))
     }
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
         didDiscoverDescriptors.send(error.map(Result.failure) ?? .success((characteristic: characteristic, descriptors: characteristic.descriptors ?? [])))
     }
-    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
         didWriteValueForDescriptor.send(error.map(Result.failure) ?? .success(descriptor))
     }
-    func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
+    public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheral) {
         becameReadyForWriteWithoutResponse.send(())
     }
-    func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didOpen channel: CBL2CAPChannel?, error: Error?) {
         didOpenChannel.send(
             error.map(Result.failure)
                 ?? channel.map(CoreBluetoothL2CAPChannel.init).map(Result.success)
@@ -78,15 +78,15 @@ extension CoreBluetoothPeripheral: CBPeripheralDelegate {
 }
 
 extension CoreBluetoothPeripheral: BluetoothPeripheral {
-    var name: String? { peripheral.name }
-    var state: CBPeripheralState { peripheral.state }
-    var services: [BluetoothService]? { peripheral.services?.map(CoreBluetoothService.init) }
-    var canSendWriteWithoutResponse: Bool { peripheral.canSendWriteWithoutResponse }
-    var isReadyAgainForWriteWithoutResponse: AnyPublisher<Void, Never> {
+    public var name: String? { peripheral.name }
+    public var state: CBPeripheralState { peripheral.state }
+    public var services: [BluetoothService]? { peripheral.services?.map(CoreBluetoothService.init) }
+    public var canSendWriteWithoutResponse: Bool { peripheral.canSendWriteWithoutResponse }
+    public var isReadyAgainForWriteWithoutResponse: AnyPublisher<Void, Never> {
         return becameReadyForWriteWithoutResponse.eraseToAnyPublisher()
     }
 
-    func readRSSI() -> AnyPublisher<NSNumber, BluetoothError> {
+    public func readRSSI() -> AnyPublisher<NSNumber, BluetoothError> {
         let peripheral = self.peripheral
         return didReadRSSI
             .tryMap { try $0.get() }
@@ -102,7 +102,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func discoverServices(_ serviceUUIDs: [CBUUID]?) -> AnyPublisher<BluetoothService, BluetoothError> {
+    public func discoverServices(_ serviceUUIDs: [CBUUID]?) -> AnyPublisher<BluetoothService, BluetoothError> {
         let peripheral = self.peripheral
         return didDiscoverServices
             .tryMap { try $0.get() }
@@ -125,7 +125,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: BluetoothService) -> AnyPublisher<BluetoothService, BluetoothError> {
+    public func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: BluetoothService) -> AnyPublisher<BluetoothService, BluetoothError> {
         guard let coreBluetoothService = service as? CoreBluetoothService else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
         return didDiscoverIncludedServices
@@ -151,7 +151,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: BluetoothService) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
+    public func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: BluetoothService) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
         guard let coreBluetoothService = service as? CoreBluetoothService else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
         return didDiscoverCharacteristics
@@ -177,7 +177,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func readCharacteristicValue(_ characteristic: BluetoothCharacteristic) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
+    public func readCharacteristicValue(_ characteristic: BluetoothCharacteristic) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
         guard let coreBluetoothCharacteristic = characteristic as? CoreBluetoothCharacteristic
         else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
@@ -197,11 +197,11 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
+    public func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
         peripheral.maximumWriteValueLength(for: type)
     }
 
-    func writeValue(_ data: Data, for characteristic: BluetoothCharacteristic, type: CBCharacteristicWriteType) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
+    public func writeValue(_ data: Data, for characteristic: BluetoothCharacteristic, type: CBCharacteristicWriteType) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
         guard let coreBluetoothCharacteristic = characteristic as? CoreBluetoothCharacteristic else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
         return didWriteValueForCharacteristic
@@ -220,7 +220,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func notifyValue(for characteristic: BluetoothCharacteristic) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
+    public func notifyValue(for characteristic: BluetoothCharacteristic) -> AnyPublisher<BluetoothCharacteristic, BluetoothError> {
         guard let coreBluetoothCharacteristic = characteristic as? CoreBluetoothCharacteristic else {
             return Fail<BluetoothCharacteristic, BluetoothError>(error: .unknownWrapperType).eraseToAnyPublisher()
         }
@@ -265,7 +265,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func discoverDescriptors(for characteristic: BluetoothCharacteristic) -> AnyPublisher<BluetoothDescriptor, BluetoothError> {
+    public func discoverDescriptors(for characteristic: BluetoothCharacteristic) -> AnyPublisher<BluetoothDescriptor, BluetoothError> {
         guard let coreBluetoothCharacteristic = characteristic as? CoreBluetoothCharacteristic else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
         return didDiscoverDescriptors
@@ -290,7 +290,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func readDescriptorValue(_ descriptor: BluetoothDescriptor) -> AnyPublisher<BluetoothDescriptor, BluetoothError> {
+    public func readDescriptorValue(_ descriptor: BluetoothDescriptor) -> AnyPublisher<BluetoothDescriptor, BluetoothError> {
         guard let coreBluetoothDescriptor = descriptor as? CoreBluetoothDescriptor else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
         return readValueForDescriptor
@@ -309,7 +309,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func writeValue(_ data: Data, for descriptor: BluetoothDescriptor) -> AnyPublisher<BluetoothDescriptor, BluetoothError> {
+    public func writeValue(_ data: Data, for descriptor: BluetoothDescriptor) -> AnyPublisher<BluetoothDescriptor, BluetoothError> {
         guard let coreBluetoothDescriptor = descriptor as? CoreBluetoothDescriptor else { return Fail(error: .unknownWrapperType).eraseToAnyPublisher() }
         let peripheral = self.peripheral
         return didWriteValueForDescriptor
@@ -328,7 +328,7 @@ extension CoreBluetoothPeripheral: BluetoothPeripheral {
             .eraseToAnyPublisher()
     }
 
-    func openL2CAPChannel(PSM: CBL2CAPPSM) -> AnyPublisher<L2CAPChannel, BluetoothError> {
+    public func openL2CAPChannel(PSM: CBL2CAPPSM) -> AnyPublisher<L2CAPChannel, BluetoothError> {
         let peripheral = self.peripheral
         return didOpenChannel
             .tryMap { try $0.get() }
